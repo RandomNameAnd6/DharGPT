@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>DharGPT Demo</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 30px;
+            text-align: center;
+            display: flex;
+        }
+
+        h2 {
+            margin-bottom: 10px;
+        }
+
+        #input_text {
+            width: 100%;
+            height: 120px;
+            padding: 10px;
+            font-size: 16px;
+            min-width: 300px;
+            resize: vertical;
+        }
+
+        #submit_button {
+            background-color: #00b6ff;
+            color: white;
+            padding: 14px 20px;
+            margin: 10px 0;
+            border: none;
+            cursor: pointer;
+            width: 45%;
+            font-size: 16px;
+            border-radius: 5px;
+            box-sizing: border-box;
+            min-width: 300px;
+        }
+
+        #clear_output_button {
+            width: 45%;
+        }
+
+        #submit_button:hover {
+            background-color: #00a4e5;
+        }
+
+        #output_container {
+            margin-top: 20px;
+            font-size: 18px;
+            font-weight: bold;
+            word-wrap: break-word;
+        }
+
+        #side_menu {
+            position: fixed;
+            top: 0;
+            left: 0;
+            padding: 20px;
+            width: 200px;
+            height: 100%;
+            background-color: #f0f0f0;
+        }
+
+        .menu_item {
+            margin-bottom: 10px;
+        }
+
+        #main_content {
+            margin-left: 270px;
+            width: calc(100% - 270px);
+            padding: 20px;
+            flex: 1;
+        }
+
+        .action-button {
+            min-width: 300px;
+            padding: 10px;
+            cursor: pointer;
+            text-align: center;
+            background-color: #D81E5B;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            height: 45px;
+        }
+
+        .action-button:hover {
+            background-color: #B71B47;
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-left: 10px;
+        }
+
+        #theme_select {
+            margin-bottom: auto;
+            width: 200px;
+        }
+
+        #top_k {
+            max-width: 112px;
+        }
+
+        #top_p {
+            min-width: 112px;
+        }
+
+        #repetition_penalty {
+            max-width: 22px
+        }
+
+        /* CSS styles for the Light theme */
+        body.theme-light {
+            background-color: #fff;
+            color: #000;
+        }
+
+        body.theme-light #side_menu {
+            background-color: #f0f0f0;
+        }
+
+        body.theme-light #input_text {
+            background-color: #fff;
+        }
+
+        body.theme-light .loading-spinner {
+            border: 3px solid rgba(0, 0, 0, 0.3);
+            border-top: 3px solid #007bff;
+        }
+
+        /* CSS styles for the Dark theme */
+        body.theme-dark {
+            background-color: #000;
+            color: #fff;
+        }
+
+        body.theme-dark #side_menu {
+            background-color: #1a1a1a;
+        }
+
+        body.theme-dark #input_text {
+            background-color: #222;
+            color: #fff;
+        }
+
+        body.theme-dark .loading-spinner {
+            border: 3px solid rgba(32, 32, 32);
+            border-top: 3px solid #007bff;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="side_menu">
+        <div class="menu_item">
+            <label for="max_length">Max Length:</label>
+            <input type="number" id="max_length" value="100" min="1" max="1024">
+        </div>
+        <div class="menu_item">
+            <label for="temperature">Temperature:</label>
+            <input type="number" id="temperature" value="1" min="0.1" max="2" step="0.1">
+        </div>
+        <div class="menu_item">
+            <label for="top_k">Top K:</label>
+            <input type="number" id="top_k" min="1" value="50">
+        </div>
+        <div class="menu_item">
+            <label for="top_p">Top P:</label>
+            <input type="number" id="top_p" min="0" max="1" step="0.1" value="1">
+        </div>
+        <div class="menu_item">
+            <label for="repetition_penalty">Repetition Penalty:</label>
+            <input type="number" id="repetition_penalty" min="0" value="1">
+        </div>
+        <select class="menu_item" id="theme_select" onchange="changeTheme()">
+            <option value="Light">Light</option>
+            <option value="Dark">Dark</option>
+        </select>
+    </div>
+
+    <!-- Add a div to contain the main content -->
+    <div id="main_content">
+        <h2>DharGPT Demo</h2>
+        <!-- Wrap the text box and the submit button in the input_wrapper div -->
+        <div id="input_wrapper">
+            <textarea id="input_text" rows="4" placeholder="Enter your text here..."></textarea>
+            <div id="buttons_section">
+                <button class="action-button" id="submit_button">Submit</button>
+                <button class="action-button" id="clear_output_button">Clear Output</button>
+            </div>
+        </div>
+        <h2>AI Response:</h2>
+        <div id="output_container">
+            <p id="output_text"></p>
+            <div class="loading-spinner" id="loading_spinner" style="display: none;"></div>
+        </div>
+    </div>
+
+
+    <script>
+        var output = document.getElementById("output_text");
+        var inputText = document.getElementById("input_text");
+        var submitButton = document.getElementById("submit_button");
+        var clearOutputButton = document.getElementById("clear_output_button");
+        var spinner = document.getElementById("loading_spinner");
+
+        // JavaScript code to handle theme toggle
+        function setTheme(theme) {
+            // Apply the selected theme by adding a class to the body
+            document.body.classList.remove("theme-light", "theme-dark");
+            if (theme === "Light") {
+                document.body.classList.add("theme-light");
+            } else if (theme === "Dark") {
+                document.body.classList.add("theme-dark");
+            }
+            // Save the theme preference to local storage
+            localStorage.setItem("theme", theme);
+        }
+
+        function changeTheme() {
+            const themeSelect = document.getElementById("theme_select");
+            const selectedTheme = themeSelect.value;
+            setTheme(selectedTheme);
+        }
+
+        // Set the theme on page load
+        document.addEventListener("DOMContentLoaded", () => {
+            const currentTheme = localStorage.getItem("theme");
+            if (currentTheme) {
+                setTheme(currentTheme);
+                // Set the selected option in the dropdown
+                const themeSelect = document.getElementById("theme_select");
+                themeSelect.value = currentTheme;
+            } else {
+                setTheme("Light");
+            }
+        });
+
+        function typeEffect(tokens, i) {
+            if (i >= tokens.length) return;
+
+            setTimeout(() => {
+                output.innerHTML = tokens[i].replace(/<br>/g, "<br>");
+                typeEffect(tokens, i + 1);
+            }, 100); // Adjust the typing speed as desired
+        }
+
+        submitButton.addEventListener("click", function () {
+            var input = inputText.value;
+            var maxLength = document.getElementById("max_length").value;
+            var temperature = document.getElementById("temperature").value;
+
+            // Show the spinner while waiting for the response
+            spinner.style.display = "inline-block";
+
+            fetch("/generate_text", {
+                method: "POST",
+                body: JSON.stringify({ input_text: input, max_length: maxLength, temperature: temperature }),
+                headers: {
+                    "Content-Type": "application/json",
+                    Accept: "application/json",
+                },
+            })
+                .then((response) => response.json())
+                .then((data) => {
+                    output.textContent = ""; // Clear the output
+                    typeEffect(data.generated_text, 0);
+
+                    // Hide the spinner when the response is ready
+                    spinner.style.display = "none";
+                });
+        });
+
+        // Function to handle the "Clear Output" button click event
+        clearOutputButton.addEventListener("click", () => {
+            output.textContent = ""; // Clear the AI response
+        });
+    </script>
+</body>
+</html>
