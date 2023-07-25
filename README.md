@@ -1,9 +1,9 @@
 # DharGPT
 A demo for GPT-2 Small fine-tuned on Dhar Mann titles (not affiliated with Dhar Mann)
 ---
-Note: The acttual fine-tuned model isn't here because it's too big.
+Note: The actual fine-tuned model isn't here because it's too big. I'll try to get it uploaded some other way.
 
-If you do want to run this though, run
+If you do want to run this though, run:
 ```bash
 python server.py
 ```
