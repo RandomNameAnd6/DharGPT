@@ -1,9 +1,9 @@
 import torch
-from transformers import GPT2Tokenizer, GPT2LMHeadModel
+from transformers import GPT2LMHeadModel, GPT2Tokenizer
 
 # Load GPT-2 model and tokenizer
-tokenizer = GPT2Tokenizer.from_pretrained('models/my_tokenizer')
-model = GPT2LMHeadModel.from_pretrained('models/saved_model')
+tokenizer = GPT2Tokenizer.from_pretrained('RandomNameAnd6/DharGPT-Tokenizer')
+model = GPT2LMHeadModel.from_pretrained('RandomNameAnd6/DharGPT')
 
 def generate_text(input_text, max_length=100, temperature=1.0, top_k=50, top_p=0.9, repetition_penalty=1.0):
     # Tokenize the input text
