@@ -1,5 +1,5 @@
 # DharGPT
-A demo for GPT-2 Small fine-tuned on Dhar Mann titles (not affiliated with Dhar Mann)
+A demo for GPT-2 Medium fine-tuned on Dhar Mann titles (not affiliated with Dhar Mann)
 ---
 
 If you do want to run this locally, run:
